@@ -194,9 +194,13 @@ Anzuschliessen sind:
 ### Mechanischer Aufbau
 
 1. **Vibrationslautsprecher** innen fest an die Dosenwand oder den Dosenboden schrauben oder kleben. Die Dose selbst ist dann der Lautsprecher, Schallloecher sind nicht noetig.
-2. **Board** so einbauen, dass das Mikrofon Richtung Dosenoeffnung zeigt – moeglichst weit weg vom Lautsprecher, damit es im VOX-Modus nicht rueckkoppelt.
+2. **Board mit der Unterseite zur Dosenoeffnung einbauen.** Die Mikrofonoeffnung liegt auf der **Unterseite** der Platine. Diese Seite muss zum offenen Dosenende zeigen, sonst ist die Sprache sehr leise. Das Mikrofon so weit wie moeglich vom Vibrationslautsprecher entfernt halten, damit es im VOX-Modus nicht rueckkoppelt.
 3. **ADXL345 fest verkleben**, nicht lose haengen lassen. Die Ausrichtung ist egal (die Firmware kalibriert die Dosenachse), aber der Sensor darf sich danach nicht mehr bewegen. Nach jedem Umbau neu kalibrieren.
-4. Die Tasten des Boards (vor allem „WiFi reset“ = PTT, volume+/-, BOOT) ueber Bohrungen erreichbar machen oder mit externen Tastern parallel verlaengern (Taster zwischen GPIO und GND, die Pull-ups sind intern aktiv).
+4. **Tasten:** Weil die Bestueckungsseite nach innen zeigt, sind die Tasten des Boards (WiFi reset = PTT, volume+/-, BOOT) nach dem Einbau **nicht mehr bedienbar**. Darum:
+   - Vor dem Einbau einrichten: Pairing, Lautstaerke und Modus (TILT oder VOX) einstellen, solange die Tasten noch erreichbar sind (siehe [Inbetriebnahme](#inbetriebnahme-kalibrieren-und-pairing)).
+   - Im Betrieb wird per **TILT** oder **VOX** gesprochen, Tasten sind dafuer nicht noetig.
+   - Spaeter alles ueber USB-C und die [serielle Konsole](#serielle-konsole) aendern (`pair`, `vol`, `mode`, `sens`, `cal`) oder die Lautstaerke per [OTA-Webseite](#ota-update-ueber-hotspot).
+   - Wer Tasten von aussen moechte, verlegt externe Taster parallel zu den Board-Tasten (Taster zwischen GPIO und GND, die Pull-ups sind intern aktiv).
 5. USB-C-Buchse und Schiebeschalter zugaenglich lassen (Laden, Flashen, Ein/Aus).
 6. Board und Akku innen fixieren. Darauf achten, dass nichts das Blech beruehrt: Dose innen mit Isolierband oder Kapton auskleben.
 7. **Antenne nach aussen** fuehren (siehe oben).
@@ -368,7 +372,7 @@ Nach dem ersten Flashen jede Dose einmal **kalibrieren** (nur mit Sensor) und an
 
 Der Sensor ist in jeder Dose anders eingebaut. Die Firmware speichert deshalb die Richtung „Dose steht aufrecht“. Ohne Kalibrierung bleibt TILT im Empfang und die Dose kann nicht klingeln.
 
-1. Dose aufrecht auf den Boden stellen, Oeffnung nach oben.
+1. Dose aufrecht auf den Boden stellen, Oeffnung nach oben. Die Kalibrierung erst **nach dem Einbau** ausfuehren, bei Variante A dann per Konsolenbefehl `cal` ueber USB, weil die Tasten nicht mehr erreichbar sind.
 2. Ausloesen:
    - Variante A: BOOT und PTT gemeinsam **2 Sekunden** halten.
    - Variante B: BOOT **6x klicken**.
@@ -396,6 +400,8 @@ Gepairte Dosen teilen einen AES-Schluessel und hoeren nur noch aufeinander. Unge
 ## Bedienung
 
 ### Variante A (ESP32-S3)
+
+Die Tasten sind nach dem Einbau meist verdeckt (Mikrofonseite zeigt zur Dosenoeffnung, siehe [Bauanleitung](#mechanischer-aufbau)). Dann gelten nur TILT, VOX und Kurbeln; alles andere geht ueber die [serielle Konsole](#serielle-konsole) oder mit nach aussen verlegten Tastern.
 
 | Aktion | Wirkung |
 |---|---|
