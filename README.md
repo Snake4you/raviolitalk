@@ -1,5 +1,7 @@
 # Canfunk
 
+**Deutsch** | [English](README.en.md)
+
 Canfunk ist ein verschluesseltes Walkie-Talkie aus Konservendosen. Zwei (oder mehr) Dosen sprechen direkt per ESP-NOW miteinander, ganz ohne Router. Ein Smartphone-Hotspot wird nur beim Start fuer Firmware-Updates (OTA) gebraucht.
 
 Die Firmware laeuft auf zwei Hardware-Varianten, die miteinander kompatibel sind:
