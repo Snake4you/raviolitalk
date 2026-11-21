@@ -7,10 +7,11 @@ Die Firmware laeuft auf zwei Hardware-Varianten, die miteinander kompatibel sind
 | | **Variante A: ESP32-S3-Dose** | **Variante B: Toy-AI-Core-C3-MINI** |
 |---|---|---|
 | PlatformIO-Environment | `retro-phone` (Standard) | `toy-c3` |
-| Mikrocontroller | ESP32-S3 (bread-compact-wifi-Board) | ESP32-C3 (SpotPear-Fertigboard) |
-| Mikrofon / Lautsprecher | INMP441 + MAX98357A, einzeln verdrahtet | ES8311-Codec + NS4150, auf dem Board |
-| Neigungssensor (TILT, Klingeln) | ADXL345, Standard | optional, standardmaessig aus |
-| Tasten | BOOT, PTT, VOL+, VOL- | nur BOOT (Mehrfachklick) |
+| Board | ESP32-S3 Voice-Chat-Board „Xiaozhi AI“ | SpotPear Toy-AI-Core-C3-MINI |
+| Mikrofon / Verstaerker / Akku-Laden | auf dem Board | auf dem Board |
+| Externe Antenne | meist erst nach Modultausch (siehe Bauanleitung) | IPEX-Anschluss vorhanden |
+| Neigungssensor ADXL345 (TILT, Klingeln) | separat eingebaut, Standard | optional, standardmaessig aus |
+| Tasten | BOOT, PTT, VOL+, VOL- (auf dem Board) | nur BOOT (Mehrfachklick) |
 | Status | im Einsatz getestet | gebaut, noch nicht auf dem Board getestet |
 
 ---
@@ -19,14 +20,15 @@ Die Firmware laeuft auf zwei Hardware-Varianten, die miteinander kompatibel sind
 
 1. [Funktionen](#funktionen)
 2. [Software bauen und flashen](#software-bauen-und-flashen)
-3. [Bauanleitung Variante A: ESP32-S3-Dose](#bauanleitung-variante-a-esp32-s3-dose)
-4. [Bauanleitung Variante B: Toy-AI-Core-C3-MINI](#bauanleitung-variante-b-toy-ai-core-c3-mini)
-5. [Konfiguration (platformio.ini)](#konfiguration-platformioini)
-6. [Inbetriebnahme: Kalibrieren und Pairing](#inbetriebnahme-kalibrieren-und-pairing)
-7. [Bedienung](#bedienung)
-8. [OTA-Update ueber Hotspot](#ota-update-ueber-hotspot)
-9. [Serielle Konsole](#serielle-konsole)
-10. [Technik und Fehlersuche](#technik-und-fehlersuche)
+3. [Warum diese Boards?](#warum-diese-boards)
+4. [Bauanleitung Variante A: ESP32-S3-Dose](#bauanleitung-variante-a-esp32-s3-dose)
+5. [Bauanleitung Variante B: Toy-AI-Core-C3-MINI](#bauanleitung-variante-b-toy-ai-core-c3-mini)
+6. [Konfiguration (platformio.ini)](#konfiguration-platformioini)
+7. [Inbetriebnahme: Kalibrieren und Pairing](#inbetriebnahme-kalibrieren-und-pairing)
+8. [Bedienung](#bedienung)
+9. [OTA-Update ueber Hotspot](#ota-update-ueber-hotspot)
+10. [Serielle Konsole](#serielle-konsole)
+11. [Technik und Fehlersuche](#technik-und-fehlersuche)
 
 ---
 
@@ -85,53 +87,82 @@ for t in test/test_*.cpp; do g++ -std=c++17 -Iinclude "$t" -o /tmp/canfunk_test 
 
 ---
 
+## Warum diese Boards?
+
+Beide Varianten nutzen fertige „AI-Voice“-Entwicklungsboards. Darauf ist fast alles schon verbaut, was eine Funk-Dose braucht:
+
+- ESP32 (S3 bzw. C3)
+- Mikrofon
+- Lautsprecher-Verstaerker
+- Akku-Ladeschaltung
+- Anschluss fuer eine externe Antenne (wichtig, weil die Dose aus Metall ist)
+
+Separat eingebaut werden nur Lautsprecher, Akku, Antenne und der Neigungssensor ADXL345.
+
+| | **Variante A: ESP32-S3** | **Variante B: ESP32-C3** |
+|---|---|---|
+| Board | ![ESP32-S3 Voice-Chat-Board](img/board-esp32-s3.png) | ![SpotPear Toy-AI-Core-C3-MINI](img/board-esp32-c3.png) |
+| Bezeichnung | ESP32-S3 Voice-Chat-Modul „Xiaozhi AI“ (bread-compact-wifi) | SpotPear Toy-AI-Core-C3-MINI |
+| Bezugsquelle (Beispiel) | [eBay 306701296366](https://www.ebay.de/itm/306701296366) | [eBay 920101340708](https://www.ebay.de/itm/920101340708) |
+| Modul / Chip | ESP32-S3, 16 MB Flash, 8 MB PSRAM (N16R8) | ESP32-C3 |
+| Mikrofon | I2S-MEMS (INMP441-Format) | ueber Audio-Codec ES8311 |
+| Verstaerker | I2S-Verstaerker (MAX98357A-Format) | NS4150 |
+| Tasten auf dem Board | WiFi reset (PTT), volume+, volume-, BOOT, EN (Reset) | BOOT, PWR |
+| Akku-Laden | ja, ueber USB-C | ja, ueber USB-C |
+| Externe Antenne | **meist nicht** – siehe unten | ja, IPEX/U.FL |
+
+---
+
 ## Bauanleitung Variante A: ESP32-S3-Dose
+
+![ESP32-S3 Voice-Chat-Board](img/board-esp32-s3.png)
 
 ### Teileliste (pro Dose)
 
 | Teil | Anzahl | Hinweis |
 |---|---:|---|
-| ESP32-S3-Board „bread-compact-wifi“ (oder ESP32-S3-DevKitC mit 16 MB Flash) | 1 | Board mit BOOT-Taste (GPIO 0) und WiFi/Reset-Taste (GPIO 1) |
-| INMP441 I2S-MEMS-Mikrofon | 1 | |
-| MAX98357A I2S-Verstaerker | 1 | |
+| ESP32-S3 Voice-Chat-Board „Xiaozhi AI“ ([Beispiel](https://www.ebay.de/itm/306701296366)) | 1 | Mikrofon, Verstaerker, Ladeschaltung und Tasten sind verbaut |
+| ESP32-S3-WROOM-1**U**-N16R8 (Modul mit Antennenanschluss) | 1 | nur falls das Board ohne Antennenanschluss kommt (siehe unten) |
+| 2,4-GHz-Antenne mit IPEX/U.FL-Kabel | 1 | nach aussen fuehren |
 | Lautsprecher 4–8 Ohm, ca. 3 W, 40–50 mm | 1 | passend zum Dosendurchmesser |
+| LiPo-Akku 3,7 V (1S) | 1 | mit passendem Stecker fuer das Board |
 | ADXL345 Beschleunigungssensor (I2C-Breakout) | 1 | fuer TILT und Klingeln |
-| Taster (Schliesser) | 2 | VOL+ und VOL- (plus PTT, falls das Board keine Taste an GPIO 1 hat) |
 | Konservendose (sauber, entgratet) | 1 | |
-| Stromversorgung | 1 | USB-Powerbank oder LiPo mit Lade-/Boost-Modul auf 5 V |
-| Litze, Heisskleber, ggf. Lochrasterplatine | | |
+| Litze, Heisskleber, Isolierband/Kapton | | |
 
-### Verdrahtung
+### Wichtig: externe Antenne / ESP umloeten
 
-Alle Module laufen an **3,3 V**, der MAX98357A darf auch an 5 V (lauter). GND aller Module verbinden.
+Das Bild zeigt ein Board mit Antennenanschluss (kleiner runder IPEX-Stecker auf dem Modul). **Geliefert wird meist die Variante ohne**: Dort steckt ein ESP32-S3-WROOM-1 mit Leiterplattenantenne. In einer Blechdose schirmt das Metall diese Antenne ab, die **Reichweite sinkt extrem**.
 
-**INMP441 (Mikrofon)**
+Abhilfe:
 
-| INMP441 | ESP32-S3 |
-|---|---|
-| VDD | 3V3 |
-| GND | GND |
-| L/R | GND (linker Kanal, wird von der Firmware gelesen) |
-| WS | GPIO 4 |
-| SCK | GPIO 5 |
-| SD | GPIO 6 |
+1. Das ESP32-S3-Modul ausloeten (Heissluft, Flussmittel, Platine vorheizen hilft).
+2. Ein **ESP32-S3-WROOM-1U-N16R8** einloeten. Das „U“ bedeutet: IPEX/U.FL-Antennenanschluss statt Leiterplattenantenne. Es muss die **N16**-Variante sein, die Firmware braucht 16 MB Flash.
+3. Antenne anschliessen und **ausserhalb** der Dose oder an einer Oeffnung aus Kunststoff montieren.
 
-**MAX98357A (Lautsprecher-Verstaerker)**
+Vor dem Kauf auf den Fotos pruefen, ob das Modul schon einen IPEX-Anschluss hat – dann entfaellt das Umloeten.
 
-| MAX98357A | ESP32-S3 |
-|---|---|
-| VIN | 5V (oder 3V3) |
-| GND | GND |
-| BCLK | GPIO 15 |
-| LRC | GPIO 16 |
-| DIN | GPIO 7 |
-| SD | offen lassen (Verstaerker an) |
-| GAIN | offen lassen (9 dB) |
-| OUT+ / OUT- | Lautsprecher |
+### Was verbaut ist und was angeschlossen wird
 
-**ADXL345 (Neigungssensor, I2C)**
+Mikrofon, Verstaerker und Tasten sind auf dem Board fest verdrahtet, die Firmware ist darauf eingestellt:
 
-| ADXL345 | ESP32-S3 |
+| Funktion | GPIO | auf dem Board |
+|---|---:|---|
+| BOOT-Taste | 0 | ja |
+| PTT (Taste „WiFi reset“) | 1 | ja |
+| Mikrofon WS, SCK, SD | 4, 5, 6 | ja |
+| Verstaerker BCLK, LRC, DIN | 15, 16, 7 | ja |
+| Taste volume- / volume+ | 39 / 40 | ja |
+| ADXL345 SDA / SCL | 41 / 42 | **nein, selbst anschliessen** |
+
+Anzuschliessen sind:
+
+- **Lautsprecher** an den Lautsprecher-Stecker des Boards (Beschriftung auf der Platine beachten).
+- **Akku** an den Akku-Stecker. Geladen wird ueber USB-C, der Schiebeschalter schaltet ein und aus.
+- **Antenne** an den IPEX-Anschluss des Moduls.
+- **ADXL345** an GPIO 41/42:
+
+| ADXL345 | ESP32-S3-Board |
 |---|---|
 | VCC | 3V3 |
 | GND | GND |
@@ -140,37 +171,36 @@ Alle Module laufen an **3,3 V**, der MAX98357A darf auch an 5 V (lauter). GND al
 | SDA | GPIO 41 |
 | SCL | GPIO 42 |
 
-**Taster** – jeweils zwischen GPIO und GND, die Pull-ups sind intern aktiv:
-
-| Taster | GPIO |
-|---|---:|
-| BOOT (auf dem Board) | 0 |
-| PTT (WiFi/Reset-Taste auf dem Board) | 1 |
-| VOL- | 39 |
-| VOL+ | 40 |
-
 ### Mechanischer Aufbau
 
 1. **Lautsprecher** mittig in den Dosenboden setzen (Loecher bohren oder Lochmuster stanzen), mit Heisskleber abdichten. Die Dose wirkt als Resonanzkoerper.
-2. **Mikrofon** nahe am Dosenrand bzw. der Oeffnung montieren, mit der Schalloeffnung nach aussen. Moeglichst weit weg vom Lautsprecher, damit es im VOX-Modus nicht rueckkoppelt.
+2. **Board** so einbauen, dass das Mikrofon Richtung Dosenoeffnung zeigt – moeglichst weit weg vom Lautsprecher, damit es im VOX-Modus nicht rueckkoppelt.
 3. **ADXL345 fest verkleben**, nicht lose haengen lassen. Die Ausrichtung ist egal (die Firmware kalibriert die Dosenachse), aber der Sensor darf sich danach nicht mehr bewegen. Nach jedem Umbau neu kalibrieren.
-4. **Taster** so in die Dosenwand setzen, dass PTT gut mit dem Daumen erreichbar ist.
-5. Board und Akku innen verkleben bzw. mit Schaumstoff fixieren. Darauf achten, dass keine Leiterbahn das Blech beruehrt (Isolierband oder Kapton innen auskleben).
-6. Die Antenne des ESP32 nicht komplett in Metall einschliessen: Bei geschlossener Dose ist die Reichweite deutlich geringer. Am besten die Antenne an der offenen Seite bzw. an einem Kunststoffdeckel platzieren.
+4. Die Tasten des Boards (vor allem „WiFi reset“ = PTT, volume+/-, BOOT) ueber Bohrungen erreichbar machen oder mit externen Tastern parallel verlaengern (Taster zwischen GPIO und GND, die Pull-ups sind intern aktiv).
+5. USB-C-Buchse und Schiebeschalter zugaenglich lassen (Laden, Flashen, Ein/Aus).
+6. Board und Akku innen fixieren. Darauf achten, dass nichts das Blech beruehrt: Dose innen mit Isolierband oder Kapton auskleben.
+7. **Antenne nach aussen** fuehren (siehe oben).
+
+### Alternative: Aufbau aus Einzelmodulen
+
+Statt des Boards geht auch ein ESP32-S3-DevKitC (16 MB Flash) mit einzelnen Modulen, verdrahtet nach der Tabelle oben: INMP441 (VDD 3V3, L/R an GND, WS/SCK/SD an 4/5/6), MAX98357A (VIN 5V, BCLK/LRC/DIN an 15/16/7) und Taster gegen GND an GPIO 1, 39 und 40. Andere Pins lassen sich in `platformio.ini` umstellen (siehe [Konfiguration](#konfiguration-platformioini)).
 
 ---
 
 ## Bauanleitung Variante B: Toy-AI-Core-C3-MINI
 
-Das SpotPear Toy-AI-Core-C3-MINI bringt Mikrofon-Codec (ES8311), Verstaerker (NS4150) und eine Taste bereits mit. Es muss nur ein Lautsprecher und eine Stromversorgung angeschlossen werden.
+![SpotPear Toy-AI-Core-C3-MINI](img/board-esp32-c3.png)
+
+Das SpotPear Toy-AI-Core-C3-MINI bringt Audio-Codec (ES8311), Verstaerker (NS4150), Ladeschaltung, BOOT- und PWR-Taste und einen **IPEX-Antennenanschluss** bereits mit. Umloeten ist hier nicht noetig.
 
 ### Teileliste (pro Dose)
 
 | Teil | Anzahl | Hinweis |
 |---|---:|---|
-| SpotPear Toy-AI-Core-C3-MINI | 1 | |
-| Lautsprecher 4–8 Ohm, 2–3 W | 1 | am Lautsprecher-Stecker des Boards |
-| Akku / Powerbank | 1 | USB-C oder Akku-Anschluss des Boards |
+| SpotPear Toy-AI-Core-C3-MINI ([Beispiel](https://www.ebay.de/itm/920101340708)) | 1 | |
+| 2,4-GHz-Antenne mit IPEX/U.FL-Kabel | 1 | an den IPEX-Anschluss neben dem ESP32-C3 |
+| Lautsprecher 4–8 Ohm, 2–3 W | 1 | |
+| LiPo-Akku 3,7 V (1S) | 1 | |
 | optional: ADXL345 | 1 | fuer TILT und Klingeln |
 | Konservendose | 1 | |
 
@@ -183,6 +213,7 @@ Das SpotPear Toy-AI-Core-C3-MINI bringt Mikrofon-Codec (ES8311), Verstaerker (NS
 | ES8311 DSDIN (Lautsprecher), ASDOUT (Mikrofon) | 5, 7 |
 | NS4150 Verstaerker-Enable | 11 |
 | I2C SDA, SCL (ES8311, Adresse `0x18`) | 3, 4 |
+| RGB-LED „IO2“ (WS2812, ungenutzt) | 2 |
 
 Logausgabe, serielle Konsole und Flashen laufen ueber den USB-C-Anschluss (USB Serial/JTAG, kein CH340).
 
@@ -203,7 +234,7 @@ Der Sensor teilt sich den I2C-Bus mit dem ES8311 (Adresse `0x18`), die Adressen 
 
 ### Mechanischer Aufbau
 
-Wie bei Variante A: Lautsprecher in den Dosenboden, Board isoliert befestigen, Mikrofon des Boards (auf der Platine) Richtung Dosenoeffnung ausrichten, die BOOT-Taste von aussen erreichbar machen (z. B. ueber einen externen Taster am BOOT-Stecker).
+Wie bei Variante A: Lautsprecher in den Dosenboden, Board isoliert befestigen, Mikrofon Richtung Dosenoeffnung, Antenne nach aussen. Die BOOT-Taste von aussen erreichbar machen, z. B. ueber einen externen Taster am BOOT-Stecker. USB-C und PWR-Taste zugaenglich lassen.
 
 ---
 
@@ -464,6 +495,7 @@ Ueber `pio device monitor -b 115200` (Variante A: CH340-USB-UART, Variante B: US
 | Problem | Ursache / Loesung |
 |---|---|
 | Dosen hoeren sich nicht | Hotspot noch an (Doppelton beim Start)? Gleicher `ESPNOW_CHANNEL` auf allen Dosen? Eine Dose gepairt, die andere nicht? Beide neu pairen oder beide `reset`. |
+| Sehr geringe Reichweite | ESP mit Leiterplattenantenne in der Blechdose. Modul mit IPEX-Anschluss und externe Antenne nach aussen verwenden (siehe Bauanleitung Variante A). |
 | TILT reagiert nicht | Nicht kalibriert (`status` zeigt die Dosenachse). Sensor nicht gefunden: CS an 3V3? SDA/SCL vertauscht? Im Log steht, an welcher Adresse gesucht wurde. |
 | Dose klingelt nicht | Steht sie wirklich auf dem Kopf (`status` → „Lage“)? Cooldown von 10 s abgelaufen? Ohne Sensor ist Klingeln nicht moeglich. |
 | Rauschen, Knattern, „Donnern“ beim Empfaenger | `MIC_BIT_SHIFT` wurde geaendert. Er muss `16` sein (siehe unten). |
