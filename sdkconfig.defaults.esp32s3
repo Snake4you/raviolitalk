@@ -1,0 +1,16 @@
+# ESP32-S3 N16R8 (bread-compact-wifi)
+
+# ── Flash ───────────────────────────────────────────────────────────────────
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# ── PSRAM (8 MB OPI – N16R8) ────────────────────────────────────────────────
+# In IDF 5.x ist CONFIG_SPIRAM der primäre Schalter.
+# CONFIG_ESP32S3_SPIRAM_SUPPORT ist ein abgeleitetes Symbol und kann nicht
+# direkt gesetzt werden – das war der Grund warum PSRAM=0 war.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_TYPE_AUTO=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY=y

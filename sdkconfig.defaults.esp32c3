@@ -1,0 +1,10 @@
+# SpotPear Toy-AI-Core-C3-MINI (ESP32-C3, 16 MB Flash, kein PSRAM)
+
+# ── Flash ───────────────────────────────────────────────────────────────────
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# ── Konsole ──────────────────────────────────────────────────────────────────
+# Das Board hat keinen USB-UART-Wandler: Log und serielle Befehle laufen über
+# den eingebauten USB-Anschluss des C3 (USB Serial/JTAG).
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y

@@ -1,0 +1,42 @@
+# Gemeinsame Einstellungen. Zielspezifisches steht in sdkconfig.defaults.esp32s3
+# bzw. sdkconfig.defaults.esp32c3 (lädt ESP-IDF automatisch passend zum Chip).
+
+# ── Flash ───────────────────────────────────────────────────────────────────
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# ── Partitionstabelle ────────────────────────────────────────────────────────
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# ── WiFi ─────────────────────────────────────────────────────────────────────
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=32
+CONFIG_ESP_WIFI_DYNAMIC_TX_BUFFER_NUM=32
+
+# ── HTTP-Server ───────────────────────────────────────────────────────────────
+# Browser im Captive Portal schicken lange Header (User-Agent, Cookies, etc.)
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=4096
+CONFIG_HTTPD_MAX_URI_LEN=1024
+
+# ── TLS ──────────────────────────────────────────────────────────────────────
+CONFIG_ESP_TLS_INSECURE=y
+CONFIG_ESP_TLS_SKIP_SERVER_CERT_VERIFY=y
+# Mozilla Root-CA-Bundle (benötigt für api.groq.com u.a.)
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# ── Compiler-Optimierung ─────────────────────────────────────────────────────
+# -O2: schnellerer Audio-/Krypto-Pfad (kein esp_lcd im Projekt, daher kein GCC-ICE).
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+# ── FreeRTOS ──────────────────────────────────────────────────────────────────
+# 1 ms Tick: genaue Timeouts im Audiopfad (bei 100 Hz ist alles < 10 ms = 0 Ticks)
+CONFIG_FREERTOS_HZ=1000
+
+# ── Tasks / Stack ─────────────────────────────────────────────────────────────
+# Default 3584 Bytes reicht nicht für nvs_flash_init + WiFi + HTTP
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384

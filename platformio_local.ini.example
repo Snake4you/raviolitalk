@@ -1,0 +1,12 @@
+; Eigene Einstellungen, die nicht ins Git gehoeren (Zugangsdaten).
+; Kopieren nach platformio_local.ini und anpassen:
+;   cp platformio_local.ini.example platformio_local.ini
+;
+; Dieser Abschnitt ersetzt [settings] aus platformio.ini komplett. Weitere
+; Optionen von dort (z. B. -DDEFAULT_VOLUME=3) koennen hier ergaenzt werden.
+
+[settings]
+build_flags =
+    '-DOTA_WIFI_SSID="MeinHotspot"'
+    '-DOTA_WIFI_PASSWORD="mein-wlan-passwort"'
+    '-DOTA_HTTP_PASSWORD="mein-ota-passwort"'
