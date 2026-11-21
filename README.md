@@ -97,7 +97,7 @@ Beide Varianten nutzen fertige „AI-Voice“-Entwicklungsboards. Darauf ist fas
 - Akku-Ladeschaltung
 - Anschluss fuer eine externe Antenne (wichtig, weil die Dose aus Metall ist)
 
-Separat eingebaut werden nur Lautsprecher, Akku, Antenne und der Neigungssensor ADXL345.
+Separat eingebaut werden nur Vibrationslautsprecher, Akku, Antenne und der Neigungssensor ADXL345 (siehe [Lautsprecher und Antenne](#lautsprecher-und-antenne)).
 
 | | **Variante A: ESP32-S3** | **Variante B: ESP32-C3** |
 |---|---|---|
@@ -111,6 +111,26 @@ Separat eingebaut werden nur Lautsprecher, Akku, Antenne und der Neigungssensor 
 | Akku-Laden | ja, ueber USB-C | ja, ueber USB-C |
 | Externe Antenne | **meist nicht** – siehe unten | ja, IPEX/U.FL |
 
+### Lautsprecher und Antenne
+
+Beide Varianten nutzen dieselben Zusatzteile.
+
+**Vibrationslautsprecher Typ GD01** ([Beispiel](https://de.aliexpress.com/item/1005008884955653.html))
+
+| Montageplatte | Anschluss |
+|---|---|
+| ![Vibrationslautsprecher GD01, Montageseite](img/vibrationslautsprecher-gd01-oben.jpg) | ![Vibrationslautsprecher GD01, Loetanschluss](img/vibrationslautsprecher-gd01-anschluss.jpg) |
+
+Ein Vibrationslautsprecher (Koerperschallwandler, „Exciter“) hat keine Membran. Er wird fest an eine Flaeche geschraubt oder geklebt und bringt diese zum Schwingen. In der Canfunk-Dose wird so **die Dose selbst zum Lautsprecher**: Es muessen keine Schallloecher gebohrt werden, und der Klang passt zum Dosentelefon.
+
+- Montage: Die Montageplatte (zwei Gewindeloecher) fest mit der Innenseite der Dose verbinden – mit Schrauben durch das Blech oder mit starkem Kleber (Epoxid, Sekundenkleber). Je fester der Kontakt, desto lauter.
+- Anschluss: zwei Loetpunkte auf der kleinen Platine, Litze zum Lautsprecher-Ausgang des Boards.
+- Die Firmware sperrt die Kurbel-Erkennung waehrend und kurz nach dem Klingelton, weil die vibrierende Dose sonst vom Neigungssensor als Kurbeln erkannt wuerde.
+
+**Kabelantenne 2,4 GHz mit IPEX-Stecker** ([Beispiel](https://de.aliexpress.com/item/1005003941989490.html))
+
+Antenne mit Koaxkabel und IPEX/U.FL-Stecker. Sie wird an den IPEX-Anschluss des ESP-Moduls (S3 nach dem Umloeten, siehe unten) bzw. des C3-Boards gesteckt und **ausserhalb der Dose** oder hinter einem Kunststoffteil befestigt. Beim Kauf darauf achten, dass Steckergroesse (IPEX1/U.FL) und Kabellaenge zum Einbau passen.
+
 ---
 
 ## Bauanleitung Variante A: ESP32-S3-Dose
@@ -123,8 +143,8 @@ Separat eingebaut werden nur Lautsprecher, Akku, Antenne und der Neigungssensor 
 |---|---:|---|
 | ESP32-S3 Voice-Chat-Board „Xiaozhi AI“ ([Beispiel](https://www.ebay.de/itm/306701296366)) | 1 | Mikrofon, Verstaerker, Ladeschaltung und Tasten sind verbaut |
 | ESP32-S3-WROOM-1**U**-N16R8 (Modul mit Antennenanschluss) | 1 | nur falls das Board ohne Antennenanschluss kommt (siehe unten) |
-| 2,4-GHz-Antenne mit IPEX/U.FL-Kabel | 1 | nach aussen fuehren |
-| Lautsprecher 4–8 Ohm, ca. 3 W, 40–50 mm | 1 | passend zum Dosendurchmesser |
+| Kabelantenne 2,4 GHz mit IPEX/U.FL ([Beispiel](https://de.aliexpress.com/item/1005003941989490.html)) | 1 | nach aussen fuehren |
+| Vibrationslautsprecher GD01 ([Beispiel](https://de.aliexpress.com/item/1005008884955653.html)) | 1 | die Dose wird zum Lautsprecher |
 | LiPo-Akku 3,7 V (1S) | 1 | mit passendem Stecker fuer das Board |
 | ADXL345 Beschleunigungssensor (I2C-Breakout) | 1 | fuer TILT und Klingeln |
 | Konservendose (sauber, entgratet) | 1 | |
@@ -157,7 +177,7 @@ Mikrofon, Verstaerker und Tasten sind auf dem Board fest verdrahtet, die Firmwar
 
 Anzuschliessen sind:
 
-- **Lautsprecher** an den Lautsprecher-Stecker des Boards (Beschriftung auf der Platine beachten).
+- **Vibrationslautsprecher** an den Lautsprecher-Stecker des Boards (Beschriftung auf der Platine beachten).
 - **Akku** an den Akku-Stecker. Geladen wird ueber USB-C, der Schiebeschalter schaltet ein und aus.
 - **Antenne** an den IPEX-Anschluss des Moduls.
 - **ADXL345** an GPIO 41/42:
@@ -173,7 +193,7 @@ Anzuschliessen sind:
 
 ### Mechanischer Aufbau
 
-1. **Lautsprecher** mittig in den Dosenboden setzen (Loecher bohren oder Lochmuster stanzen), mit Heisskleber abdichten. Die Dose wirkt als Resonanzkoerper.
+1. **Vibrationslautsprecher** innen fest an die Dosenwand oder den Dosenboden schrauben oder kleben. Die Dose selbst ist dann der Lautsprecher, Schallloecher sind nicht noetig.
 2. **Board** so einbauen, dass das Mikrofon Richtung Dosenoeffnung zeigt – moeglichst weit weg vom Lautsprecher, damit es im VOX-Modus nicht rueckkoppelt.
 3. **ADXL345 fest verkleben**, nicht lose haengen lassen. Die Ausrichtung ist egal (die Firmware kalibriert die Dosenachse), aber der Sensor darf sich danach nicht mehr bewegen. Nach jedem Umbau neu kalibrieren.
 4. Die Tasten des Boards (vor allem „WiFi reset“ = PTT, volume+/-, BOOT) ueber Bohrungen erreichbar machen oder mit externen Tastern parallel verlaengern (Taster zwischen GPIO und GND, die Pull-ups sind intern aktiv).
@@ -198,8 +218,8 @@ Das SpotPear Toy-AI-Core-C3-MINI bringt Audio-Codec (ES8311), Verstaerker (NS415
 | Teil | Anzahl | Hinweis |
 |---|---:|---|
 | SpotPear Toy-AI-Core-C3-MINI ([Beispiel](https://www.ebay.de/itm/920101340708)) | 1 | |
-| 2,4-GHz-Antenne mit IPEX/U.FL-Kabel | 1 | an den IPEX-Anschluss neben dem ESP32-C3 |
-| Lautsprecher 4–8 Ohm, 2–3 W | 1 | |
+| Kabelantenne 2,4 GHz mit IPEX/U.FL ([Beispiel](https://de.aliexpress.com/item/1005003941989490.html)) | 1 | an den IPEX-Anschluss neben dem ESP32-C3 |
+| Vibrationslautsprecher GD01 ([Beispiel](https://de.aliexpress.com/item/1005008884955653.html)) | 1 | die Dose wird zum Lautsprecher |
 | LiPo-Akku 3,7 V (1S) | 1 | |
 | optional: ADXL345 | 1 | fuer TILT und Klingeln |
 | Konservendose | 1 | |
@@ -234,7 +254,7 @@ Der Sensor teilt sich den I2C-Bus mit dem ES8311 (Adresse `0x18`), die Adressen 
 
 ### Mechanischer Aufbau
 
-Wie bei Variante A: Lautsprecher in den Dosenboden, Board isoliert befestigen, Mikrofon Richtung Dosenoeffnung, Antenne nach aussen. Die BOOT-Taste von aussen erreichbar machen, z. B. ueber einen externen Taster am BOOT-Stecker. USB-C und PWR-Taste zugaenglich lassen.
+Wie bei Variante A: Vibrationslautsprecher fest an die Dose, Board isoliert befestigen, Mikrofon Richtung Dosenoeffnung, Antenne nach aussen. Die BOOT-Taste von aussen erreichbar machen, z. B. ueber einen externen Taster am BOOT-Stecker. USB-C und PWR-Taste zugaenglich lassen.
 
 ---
 
@@ -496,10 +516,11 @@ Ueber `pio device monitor -b 115200` (Variante A: CH340-USB-UART, Variante B: US
 |---|---|
 | Dosen hoeren sich nicht | Hotspot noch an (Doppelton beim Start)? Gleicher `ESPNOW_CHANNEL` auf allen Dosen? Eine Dose gepairt, die andere nicht? Beide neu pairen oder beide `reset`. |
 | Sehr geringe Reichweite | ESP mit Leiterplattenantenne in der Blechdose. Modul mit IPEX-Anschluss und externe Antenne nach aussen verwenden (siehe Bauanleitung Variante A). |
+| Wiedergabe leise oder scheppernd | Vibrationslautsprecher hat keinen festen Kontakt zum Blech: fester verschrauben bzw. vollflaechig kleben. Lose Teile in der Dose fixieren. |
 | TILT reagiert nicht | Nicht kalibriert (`status` zeigt die Dosenachse). Sensor nicht gefunden: CS an 3V3? SDA/SCL vertauscht? Im Log steht, an welcher Adresse gesucht wurde. |
 | Dose klingelt nicht | Steht sie wirklich auf dem Kopf (`status` → „Lage“)? Cooldown von 10 s abgelaufen? Ohne Sensor ist Klingeln nicht moeglich. |
 | Rauschen, Knattern, „Donnern“ beim Empfaenger | `MIC_BIT_SHIFT` wurde geaendert. Er muss `16` sein (siehe unten). |
-| VOX sendet staendig / nie | Empfindlichkeit mit BOOT + VOL+/VOL- oder `sens` anpassen. Mikrofon weiter weg vom Lautsprecher. |
+| VOX sendet staendig / nie | Empfindlichkeit mit BOOT + VOL+/VOL- oder `sens` anpassen. Mikrofon weiter weg vom Vibrationslautsprecher. |
 | OTA-Seite nicht erreichbar | mDNS wird von manchen Hotspots nicht weitergereicht: IP in der Hotspot-Liste nachsehen. |
 
 ### Mikrofonformat INMP441
