@@ -36,7 +36,7 @@ The firmware runs on two hardware variants that work with each other:
 
 ## Features
 
-- **Voice radio** over ESP-NOW, G.711 u-law, 16 kHz, mono. AES-128 encrypted after pairing.
+- **Voice radio** over ESP-NOW, G.711 u-law, 16 kHz, mono. AES-128 encrypted after pairing (basic protection against casual eavesdropping, not secure encryption, see [Security](#security)).
 - **Three ways to transmit:**
   - **Button (PTT)**: always transmits while held.
   - **TILT**: tilting the can towards your mouth (35–70 degrees) starts transmitting; holding it to your ear or standing it upright stops.
@@ -388,6 +388,8 @@ Repeat after any sensor rebuild or after the flash was erased.
 
 Paired cans share an AES key and only listen to each other. Unpaired cans broadcast unencrypted to everyone.
 
+> The key is sent **in plain text** during pairing. Pair where nobody is sniffing with an ESP32 (see [Security](#security)).
+
 1. Hotspot off, switch on both cans (they must be in ESP-NOW mode, see [OTA](#ota-update-via-hotspot)).
 2. Start pairing on both cans within 15 seconds:
    - Variant A: hold VOL+ and VOL- together for **3 seconds** (rising tones).
@@ -513,12 +515,28 @@ The console messages themselves are in German.
 ### Architecture
 
 - ESP-IDF 5.2.1 via PlatformIO (`espressif32@6.7.0`), 16 MB flash, custom partition table with two OTA slots
-- ESP-NOW with AES-128 and a stored 16-byte LMK
+- ESP-NOW broadcast; after pairing the firmware encrypts the voice with AES-128 (ECB) and a stored 16-byte key (not ESP-NOW's built-in encryption, which does not exist for broadcasts)
 - G.711 u-law, 16 kHz, mono, 240 samples (15 ms) per packet, 30 ms jitter buffer
 - [src/main.cpp](src/main.cpp): radio, OTA, pairing, TILT, ringing, buttons, console
 - [src/audio.cpp](src/audio.cpp): I2S microphone and speaker or ES8311 codec
 - [src/config.h](src/config.h): pins and defaults for both boards
 - [include/](include/): tilt trigger, crank/upside-down detection, volume command (hardware independent, with tests in [test/](test/))
+
+### Security
+
+The encryption is **basic protection against casual eavesdropping** (e.g. by someone else's unpaired can), but it is **not secure** against someone deliberately sniffing with an ESP32 or Wi-Fi sniffer:
+
+| Issue | Effect |
+|---|---|
+| Unpaired cans transmit in plain text | Any ESP-NOW device on the same channel can listen. |
+| The key is sent in plain text during pairing | Anyone listening during the 15 s of pairing can decrypt everything afterwards. An already paired can also includes the key in every pairing request. |
+| AES in ECB mode | Identical data blocks give identical ciphertext: pauses and speech activity are visible. |
+| Fixed "signature" instead of message authentication | Recorded packets can be replayed later without knowing the key. Tampered packets are not detected. |
+| Ring packets are unencrypted | Other devices can trigger ringing once the fixed signature is known. |
+
+That is fine for toys, hobby projects and makerspaces. **Confidential conversations** do not belong on Canfunk.
+
+Possible improvement: AES-CCM/GCM with a packet counter as nonce and an ECDH (X25519) key exchange during pairing. This changes the radio protocol; all cans would need to be reflashed and paired again.
 
 ### Common problems
 

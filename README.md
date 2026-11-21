@@ -36,7 +36,7 @@ Die Firmware laeuft auf zwei Hardware-Varianten, die miteinander kompatibel sind
 
 ## Funktionen
 
-- **Sprechfunk** per ESP-NOW, G.711 u-law, 16 kHz, Mono. Nach dem Pairing mit AES-128 verschluesselt.
+- **Sprechfunk** per ESP-NOW, G.711 u-law, 16 kHz, Mono. Nach dem Pairing mit AES-128 verschluesselt (einfacher Schutz gegen zufaelliges Mithoeren, keine sichere Verschluesselung, siehe [Sicherheit](#sicherheit)).
 - **Drei Sende-Ausloeser:**
   - **Taste (PTT)**: sendet immer, solange sie gehalten wird.
   - **TILT**: Dose zum Mund kippen (35–70 Grad) startet das Senden, ans Ohr halten oder aufrecht stellen beendet es.
@@ -388,6 +388,8 @@ Wiederholen nach jedem Sensorumbau oder wenn der Flash geloescht wurde.
 
 Gepairte Dosen teilen einen AES-Schluessel und hoeren nur noch aufeinander. Ungepairte Dosen senden unverschluesselt an alle.
 
+> Der Schluessel wird beim Pairing **im Klartext** uebertragen. Pairing deshalb dort durchfuehren, wo niemand mit einem ESP32 mitschneidet (siehe [Sicherheit](#sicherheit)).
+
 1. Hotspot aus, beide Dosen einschalten (sie muessen im ESP-NOW-Betrieb sein, siehe [OTA](#ota-update-ueber-hotspot)).
 2. Auf beiden Dosen innerhalb von 15 Sekunden Pairing starten:
    - Variante A: VOL+ und VOL- gemeinsam **3 Sekunden** halten (aufsteigende Toene).
@@ -511,12 +513,28 @@ Ueber `pio device monitor -b 115200` (Variante A: CH340-USB-UART, Variante B: US
 ### Architektur
 
 - ESP-IDF 5.2.1 ueber PlatformIO (`espressif32@6.7.0`), 16 MB Flash, eigene Partitionstabelle mit zwei OTA-Slots
-- ESP-NOW mit AES-128 und gespeichertem 16-Byte-LMK
+- ESP-NOW als Broadcast; nach dem Pairing wird die Sprache in der Firmware mit AES-128 (ECB) und einem gespeicherten 16-Byte-Schluessel verschluesselt (nicht die eingebaute ESP-NOW-Verschluesselung, die es fuer Broadcasts nicht gibt)
 - G.711 u-law, 16 kHz, Mono, 240 Samples (15 ms) pro Paket, 30 ms Jitterpuffer
 - [src/main.cpp](src/main.cpp): Funk, OTA, Pairing, TILT, Klingeln, Tasten, Konsole
 - [src/audio.cpp](src/audio.cpp): I2S-Mikrofon und -Lautsprecher bzw. ES8311-Codec
 - [src/config.h](src/config.h): Pins und Standardwerte beider Boards
 - [include/](include/): Tilt-Trigger, Kurbel-/Kopflage-Erkennung, Lautstaerkebefehl (hardwareunabhaengig, mit Tests in [test/](test/))
+
+### Sicherheit
+
+Die Verschluesselung ist ein **einfacher Schutz gegen zufaelliges Mithoeren** (z. B. durch eine fremde, ungepairte Dose), aber **nicht sicher** gegen jemanden, der gezielt mit einem ESP32 oder WLAN-Sniffer mitschneidet:
+
+| Punkt | Auswirkung |
+|---|---|
+| Ungepairt wird im Klartext gesendet | Jedes ESP-NOW-Geraet auf demselben Kanal kann mithoeren. |
+| Schluessel geht beim Pairing im Klartext ueber Funk | Wer waehrend der 15 s Pairing mithoert, kann danach alles entschluesseln. Eine schon gepairte Dose sendet den Schluessel auch in jeder Pairing-Anfrage mit. |
+| AES im ECB-Modus | Gleiche Datenbloecke ergeben gleichen Geheimtext: Sprechpausen und Sprechaktivitaet sind erkennbar. |
+| Feste „Signatur“ statt Nachrichtenauthentisierung | Aufgezeichnete Pakete koennen spaeter erneut abgespielt werden, ohne den Schluessel zu kennen. Manipulierte Pakete werden nicht erkannt. |
+| Klingel-Pakete unverschluesselt | Klingeln kann von fremden Geraeten ausgeloest werden, wenn die feste Signatur bekannt ist. |
+
+Fuer Spiel, Bastelprojekt und Fablab reicht das. **Vertrauliche Gespraeche** gehoeren nicht ueber Canfunk.
+
+Moegliche Verbesserung: AES-CCM/GCM mit Paketzaehler als Nonce und ein Schluesselaustausch per ECDH (X25519) beim Pairing. Das aendert das Funkprotokoll; alle Dosen muessten neu geflasht und neu gepairt werden.
 
 ### Haeufige Probleme
 
